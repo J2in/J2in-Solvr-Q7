@@ -1,8 +1,125 @@
-# 풀스택 서비스 보일러 플레이트
+# Release Tracker 프로젝트
+
+**“Release Tracker”**는 두 개의 GitHub 저장소(`daangn/stackflow`, `daangn/seed-design`)의 릴리즈 데이터를 수집·가공하여
+CSV 통계 파일을 생성하고, 이를 바탕으로 간단한 대시보드를 보여주는 풀스택 애플리케이션입니다.
+
+---
+
+## 목차
+
+1. [프로젝트 개요](#프로젝트-개요)
+2. [기술 스택](#기술-스택)
+3. [폴더 구조](#폴더-구조)
+4. [기존 내용](#기술-스택)
+
+---
 
 ## 프로젝트 개요
 
-이 보일러 플레이트는 풀스택 웹 애플리케이션 개발을 위한 기본 구조를 제공합니다. monorepo 구조로 클라이언트와 서버를 효율적으로 관리하며, 현대적인 웹 개발 기술 스택을 활용합니다.
+“Release Tracker”는 Daangn(당근) 팀의 두 개 GitHub 저장소(`stackflow`, `seed-design`)에서
+릴리즈 데이터를 추출하여 다양한 통계 정보를 생성·시각화하는 툴입니다.
+
+1. **백엔드 (server)**
+
+   - Task1/Task2: GitHub API로부터 릴리즈 목록을 받아 CSV로 저장
+   - Task3: Raw 릴리즈 데이터를 보강(Enrich)하여 JSON/CSV 형태로 저장
+   - Task4: 시각화용 데이터(API) 제공
+   - [Fastify](https://www.fastify.io/), [Drizzle ORM](https://orm.drizzle.team/) 사용
+
+2. **프론트엔드 (client)**
+   - 백엔드에서 내려주는 EnrichedRelease 데이터를 기반으로 대시보드를 구성
+   - [React](https://reactjs.org/), [Recharts](https://recharts.org/), [Vite](https://vitejs.dev/) 사용
+
+대시보드는 “EnrichedRelease” 데이터를 시각화하여
+팀원들이 릴리즈 현황을 빠르게 파악하도록 돕는 인터랙티브 페이지입니다.
+
+주요 차트 및 기능 1. 월별 릴리즈 트렌드 (ReleaseTrendByMonth)
+• x축: 연·월(YYYY-MM), y축: 릴리즈 개수
+• 릴리즈가 집중된 시기를 한눈에 확인 가능 2. 릴리즈 타입 분포 (ReleaseTypeDistribution)
+• 파이 차트 또는 막대 차트로 표현
+• major, minor, patch, prerelease 별 비율을 시각화 3. 요일별 릴리즈 분포
+• 각 요일(월~일) 별 릴리즈 건수
+• 주중 집중도, 주말 릴리즈 여부 확인 4. 추가 확장 가능 차트
+• 필요 시 시간대별 분포, 기여자 상위 3명 통계, 릴리즈 간 평균 주기 등 자유롭게 추가
+
+---
+
+## 기술 스택
+
+- **백엔드 (server)**
+
+  - Node.js (v22 이상) & TypeScript
+  - Fastify (HTTP 서버)
+  - Drizzle ORM + SQLite (간단한 로컬 DB)
+  - axios (GitHub REST API 호출)
+  - csv-writer / json2csv (CSV 생성)
+  - date-fns (날짜·시간 파싱)
+  - @octokit/rest (GitHub 메트릭/API 추가 호출)
+
+- **프론트엔드 (client)**
+  - React (v18) + TypeScript
+  - Vite (개발 빌드)
+  - react-router-dom (SPA 라우팅)
+  - recharts (데이터 시각화)
+  - axios (서버 API 호출)
+  - date-fns (날짜 포맷)
+
+---
+
+## 폴더 구조
+
+```
+J2in-Solvr-Q7/
+├─ server/ # 백엔드 소스
+│ ├─ src/
+│ │ ├─ config/
+│ │ │ └─ env.ts # .env 변수 로딩
+│ │ ├─ db/
+│ │ │ ├─ migrate.ts # 마이그레이션 스크립트
+│ │ │ ├─ schema.ts # Drizzle ORM 스키마 정의
+│ │ │ └─ index.ts # DB 초기화
+│ │ ├─ services/
+│ │ │ └─ … # (추후 확장) 서비스 레이어
+│ │ ├─ tasks/
+│ │ │ ├─ generateStats.ts # Task1/Task2 통계 생성
+│ │ │ ├─ generateRawData.ts # Task3 Raw 데이터 생성
+│ │ │ └─ enrichRawData.ts # 세부 Enrichment 로직
+│ │ ├─ types/
+│ │ │ ├─ github.ts # GH API 원본 타입 정의
+│ │ │ ├─ release.ts # EnrichedRelease 타입 정의
+│ │ │ └─ stats.ts # 통계용 타입 정의
+│ │ ├─ routes/
+│ │ │ ├─ releaseRoutes.ts # /api/releases/\* 엔드포인트 정의
+│ │ │ └─ index.ts # Fastify 플러그인 등록
+│ │ └─ index.ts # 서버 엔트리포인트
+│ ├─ package.json
+│ └─ tsconfig.json
+│
+└─ client/ # 프론트엔드 소스
+├─ public/
+│ └─ index.html
+├─ src/
+│ ├─ components/
+│ │ ├─ Dashboard.tsx
+│ │ └─ charts/
+│ │ ├─ ReleaseTrendByMonth.tsx
+│ │ ├─ ReleaseTypeDistribution.tsx
+│ │ └─ …추가 차트 컴포넌트
+│ ├─ hooks/
+│ │ └─ useRawData.ts # /api/releases/enriched 호출 커스텀 훅
+│ ├─ pages/
+│ │ └─ HomePage.tsx
+│ ├─ routes/
+│ │ └─ AppRoutes.tsx # React Router 설정
+│ ├─ types/
+│ │ └─ release.ts # 클라이언트용 EnrichedRelease 타입
+│ ├─ App.tsx
+│ └─ main.tsx
+├─ package.json
+└─ tsconfig.json
+```
+
+---
 
 ## 기술 스택
 
