@@ -3,7 +3,7 @@
 
 import { GitHubReleaseRaw } from '../../types/github'
 import { ReleaseRecord, ReleaseStat } from '../../types/stats'
-import { parseISO, format, getYear, getWeek } from 'date-fns'
+import { parseISO, format, getYear, getWeek, getDay } from 'date-fns'
 
 /**
  * GitHubReleaseRaw 배열을 ReleaseRecord 배열로 변환
@@ -99,24 +99,78 @@ export function computeHourlyStats(records: ReleaseRecord[]): ReleaseStat[] {
 /**
  * 단위(unit)에 따라 적절한 compute 함수를 호출하여 ReleaseStat[] 반환
  * @param records ReleaseRecord[]
- * @param unit "yearly"|"monthly"|"weekly"|"daily"|"hourly"
+ * @param options {
+ *   unit: "yearly" | "monthly" | "weekly" | "daily" | "hourly" | "custom",
+ *   dateFormat?: string,                // unit==="custom"일 때 사용하는 포맷 문자열
+ *   formatter?: (date: Date) => string, // unit==="custom"일 때 사용하는 함수
+ *   filterFn?: (record: ReleaseRecord) => boolean // 레코드를 걸러낼 필터 함수
+ * }
  */
 export function computeStatsByUnit(
   records: ReleaseRecord[],
-  unit: 'yearly' | 'monthly' | 'weekly' | 'daily' | 'hourly'
+  options: {
+    unit: 'yearly' | 'monthly' | 'weekly' | 'daily' | 'hourly' | 'custom'
+    dateFormat?: string
+    formatter?: (date: Date) => string
+    filterFn?: (record: ReleaseRecord) => boolean
+  }
 ): ReleaseStat[] {
+  const { unit, dateFormat, formatter, filterFn } = options
+  const filteredRecords = filterFn ? records.filter(r => filterFn(r)) : records
+
   switch (unit) {
     case 'yearly':
-      return computeYearlyStats(records)
+      return computeYearlyStats(filteredRecords)
     case 'monthly':
-      return computeMonthlyStats(records)
+      return computeMonthlyStats(filteredRecords)
     case 'weekly':
-      return computeWeeklyStats(records)
+      return computeWeeklyStats(filteredRecords)
     case 'daily':
-      return computeDailyStats(records)
+      return computeDailyStats(filteredRecords)
     case 'hourly':
-      return computeHourlyStats(records)
+      return computeHourlyStats(filteredRecords)
+    case 'custom':
+      if (formatter) {
+        return computeCustomByFormatter(filteredRecords, formatter)
+      } else if (dateFormat) {
+        return computeCustomByDateFormat(filteredRecords, dateFormat)
+      } else {
+        throw new Error('For custom unit, either formatter or dateFormat must be provided')
+      }
     default:
       return []
   }
+}
+
+/**
+ * Custom 통계 계산 (period = format(date, dateFormat))
+ * @param records ReleaseRecord[]
+ * @param dateFormat string (예: "yyyy-MM-dd")
+ */
+function computeCustomByDateFormat(records: ReleaseRecord[], dateFormat: string): ReleaseStat[] {
+  const map: Record<string, number> = {}
+  for (const r of records) {
+    const date = parseISO(r.published_at)
+    const key = format(date, dateFormat)
+    map[key] = (map[key] || 0) + 1
+  }
+  return Object.entries(map).map(([period, count]) => ({ period, count }))
+}
+
+/**
+ * Custom 통계 계산 (period = formatter(date))
+ * @param records ReleaseRecord[]
+ * @param formatter (date: Date) => string
+ */
+function computeCustomByFormatter(
+  records: ReleaseRecord[],
+  formatter: (date: Date) => string
+): ReleaseStat[] {
+  const map: Record<string, number> = {}
+  for (const r of records) {
+    const date = parseISO(r.published_at)
+    const key = formatter(date)
+    map[key] = (map[key] || 0) + 1
+  }
+  return Object.entries(map).map(([period, count]) => ({ period, count }))
 }
