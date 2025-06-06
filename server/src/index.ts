@@ -5,7 +5,7 @@ import { initializeDatabase, getDb } from './db'
 import runMigration from './db/migrate'
 import { createUserService } from './services/userService'
 import { createRoutes } from './routes'
-import releaseRoutes from './routes/releaseRoutes'
+import enrichRoutes from './routes/enrichRoutes'
 import { AppContext } from './types/context'
 
 // Fastify 인스턴스 생성
@@ -46,7 +46,7 @@ async function start() {
     await fastify.register(createRoutes(context))
 
     // (추가) enriched 릴리즈 데이터를 내려주는 라우트 등록
-    await fastify.register(releaseRoutes)
+    await fastify.register(enrichRoutes)
 
     // 서버 시작
     await fastify.listen({ port: env.PORT, host: env.HOST })
