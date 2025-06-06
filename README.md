@@ -10,7 +10,8 @@ CSV 통계 파일을 생성하고, 이를 바탕으로 간단한 대시보드를
 1. [프로젝트 개요](#프로젝트-개요)
 2. [기술 스택](#기술-스택)
 3. [폴더 구조](#폴더-구조)
-4. [기존 내용](#기술-스택)
+4. [Change log](#Change-log)
+5. [기존 내용](#기술-스택)
 
 ---
 
@@ -118,6 +119,45 @@ J2in-Solvr-Q7/
 ├─ package.json
 └─ tsconfig.json
 ```
+
+---
+
+## Change log
+
+모든 변경 내역은 날짜 순으로 기록됩니다.
+
+## [1.0.0] – 2025-06-07
+
+### Added
+
+- **Task 1**:
+
+  - GitHub API(daangn/stackflow, daangn/seed-design)로부터 릴리즈 데이터 수집
+  - CSV(`release_statistics_yearly.csv`, `release_statistics_weekly.csv`, `release_statistics_daily.csv`) 생성
+
+- **Task 2**:
+
+  - 주말 제외 옵션을 적용하여 근무일 기준 통계 생성
+    - CSV(`release_statistics_yearly_weekdays.csv`, `release_statistics_weekly_weekdays.csv`, `release_statistics_daily_weekdays.csv`) 생성
+
+- **Task 3**:
+
+  - Raw 릴리즈 데이터를 EnrichedRelease 형태로 보강 (릴리즈 노트, Asset, SemVer, 날짜·시간, 메트릭 등)
+    - TODO: 릴리즈 노트, contributor등 데이터 활용 방안 고안
+  - `release_enriched.csv` 생성 및 `/api/releases/enriched` 엔드포인트 추가
+
+- **Task 4**:
+
+  - React + Recharts 기반 대시보드 구현
+    - 월별 릴리즈 트렌드, 릴리즈 타입 분포, 요일별 분포 차트 추가
+  - `/api/releases/enriched` 호출 훅(`useRawData`) 구현
+
+- **Task 5**:
+
+  - 클라이언트: 서버 API 호출 후 차트 렌더링
+  - `/api/statistics/{yearly,weekly,daily}` 엔드포인트 추가
+  - `/api/statistics/` 호출 훅(`useStatistics`) 구현
+  - `/api/statistics/{yearly,weekly,daily}`, `/api/releases/enriched` 라우트 최종 검증
 
 ---
 
