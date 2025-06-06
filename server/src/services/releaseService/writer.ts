@@ -46,7 +46,7 @@ export async function writeStatsCSV(stats: ReleaseStat[], periodName: string, ou
   const csvWriter = createObjectCsvWriter({
     path: path.join(outDir, fileName),
     header: [
-      { id: 'period', title: periodName },
+      { id: 'period', title: 'period' },
       { id: 'count', title: 'count' }
     ]
   })
