@@ -1,5 +1,4 @@
 // client/src/components/charts/ReleaseTrendByMonth.tsx
-import React from 'react'
 import {
   LineChart,
   Line,
@@ -9,7 +8,6 @@ import {
   Tooltip,
   ResponsiveContainer
 } from 'recharts'
-import { format, parseISO } from 'date-fns'
 
 interface Props {
   data: Array<{ month: string; count: number }>
