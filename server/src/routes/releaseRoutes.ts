@@ -2,7 +2,7 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import fs from 'fs/promises'
 import path from 'path'
 import { parse } from 'csv-parse/sync'
-import type { EnrichedRelease } from '../types/release'
+import type { EnrichedRelease } from '../types/enrich'
 
 export default async function releaseRoutes(fastify: FastifyInstance) {
   fastify.get('/api/releases/enriched', async (_request: FastifyRequest, reply: FastifyReply) => {

@@ -15,7 +15,7 @@ import {
   differenceInCalendarDays,
   isWeekend
 } from 'date-fns'
-import { EnrichedRelease } from '../types/release'
+import { EnrichedRelease } from '../types/enrich'
 
 // 1) 원시 CSV 경로 & 결과 CSV 경로
 const RAW_CSV_PATH = path.resolve(__dirname, '../../data/releases_output/release_details.csv')
